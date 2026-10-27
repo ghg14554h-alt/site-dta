@@ -1,0 +1,38 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { CtaFooter } from "../components/CtaFooter";
+
+const cases = [
+  ["01", "ФОРМА", "Фирменный стиль для архитектурного бюро", "/caseboards/forma.png"],
+];
+
+const slotServices = [
+  { title: "Логотип", total: 5, free: 3 }, { title: "Логобук", total: 2, free: 2 },
+  { title: "Брендбук MINI / MAX", total: 2, free: 2 }, { title: "Печатная продукция", total: 5, free: 5 },
+  { title: "Digital-реклама", total: 5, free: 2 }, { title: "Монтаж рекламных роликов", total: 5, free: 2 },
+];
+const faqs = [
+  ["Что такое кейсы и их наличие?", "Кейсы — это основные позиции из нашего прайс-листа, доступные к покупке в текущем месяце. Если кейсов доступно не полное количество, значит часть этих позиций уже оплачена и запущена в разработку. Система кейсов помогает контролировать загрузку и не брать больше проектов, чем мы можем качественно выполнить."],
+  ["Что делать, если нужной услуги нет в доступе к покупке?", "Напишите нам и объясните задачу. Мы перенесём её на удобный срок, а в качестве благодарности за ожидание вы получите скидку 20% на стоимость нужной позиции."],
+];
+function serviceStatus(free: number, total: number) { if (!free) return "Мест нет"; if (free === total) return "Все места свободны"; if (free === 1) return "Осталось 1 место"; return `${free} свободных места`; }
+
+export default function CasesPage() {
+  const [menuOpen, setMenuOpen] = useState(false); const [view, setView] = useState<"cards" | "queue">("cards");
+  const [selected, setSelected] = useState<string | null>(null); const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const submitBooking = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setSelected(null); };
+  return <main>
+    <header className="site-header"><Link href="/" className="brand" aria-label="DTA — на главную"><Image src="/brand/logo.png" alt="DTA" width={40} height={40} /></Link><nav className={menuOpen ? "main-nav is-open" : "main-nav"}><Link href="/#services" onClick={() => setMenuOpen(false)}>Услуги</Link><Link href="/cases" onClick={() => setMenuOpen(false)}>Кейсы</Link><Link href="/prices" onClick={() => setMenuOpen(false)}>Цены</Link></nav><Link className="header-contact" href="/#contact">Обсудить проект <span>↗</span></Link><button className="menu-button" aria-label="Открыть меню" onClick={() => setMenuOpen(!menuOpen)}><span /><span /></button></header>
+    <section className="cases-hero page-pad"><p className="eyebrow">Кейсы / очередь проектов</p><h1>Понятно,<br /><em>что доступно.</em></h1><p>Доступные к покупке в этом месяце — без скрытых сроков и искусственного дефицита.</p></section>
+    <section className="availability-section page-pad"><div className="availability-top"><div><p className="eyebrow">Кейсы</p><h2>Доступные к покупке<br /><em>в этом месяце</em></h2></div><div className="availability-live"><span className="live-dot" /> Обновлено недавно</div></div><div className="availability-stats"><span><b>16</b> Свободно сейчас</span><span><b>8</b> В работе</span><span><b>6</b> Типов кейсов</span><small>Количество мест обновляется по мере запуска новых проектов.</small></div><div className="availability-switch" role="tablist" aria-label="Вид очереди"><button className={view === "cards" ? "active" : ""} onClick={() => setView("cards")}>Карточки</button><button className={view === "queue" ? "active" : ""} onClick={() => setView("queue")}>Очередь</button></div>
+      {view === "cards" ? <div className="slot-grid">{slotServices.map((service) => <article className="slot-card" key={service.title}><div className="slot-card-top"><span className="slot-kicker">Кейс / месяц</span><strong>{service.free} / {service.total}</strong></div><h3>{service.title}</h3><p className="slot-status">{serviceStatus(service.free, service.total)}</p><div className="slot-dots" aria-label={`${service.free} из ${service.total} мест свободно`}>{Array.from({ length: service.total }, (_, index) => <i className={index < service.free ? "free" : "busy"} key={index} />)}</div><div className="slot-progress"><span style={{ width: `${(service.free / service.total) * 100}%` }} /></div><p className="slot-caption">{service.free} из {service.total} мест свободно</p><button className="slot-button" onClick={() => setSelected(service.title)}>{service.free === 1 ? "Забрать последнее место" : service.free ? "Забронировать кейс" : "Встать в очередь"}<span>↗</span></button><button className="slot-details" onClick={() => setSelected(service.title)}>Подробнее</button></article>)}</div> : <div className="queue-list">{slotServices.map((service) => <article className="queue-row" key={service.title}><div><span className="slot-kicker">{service.free ? "Свободные" : "В работе"}</span><h3>{service.title}</h3></div><div className="queue-slots">{Array.from({ length: service.total }, (_, index) => <span className={index < service.free ? "queue-free" : "queue-busy"} key={index}><b>{String(index + 1).padStart(2, "0")}</b> {index < service.free ? "Свободно" : "В разработке"}</span>)}</div><button className="slot-button" onClick={() => setSelected(service.title)}>Открыть <span>↗</span></button></article>)}</div>}
+      <div className="faq-list">{faqs.map(([question, answer], index) => <div className={`faq-item ${openFaq === index ? "is-open" : ""}`} key={question}><button onClick={() => setOpenFaq(openFaq === index ? null : index)}><span>{question}</span><b>+</b></button><div className="faq-answer"><p>{answer}</p>{index === 1 && <button className="text-link" onClick={() => setSelected("Услуга в очереди")}>Встать в очередь со скидкой −20% <span>↗</span></button>}</div></div>)}</div><aside className="availability-note"><span>Важно</span><p>Если конкретная услуга из прайс-листа не числится в системе кейсов, это означает, что она доступна к покупке без учёта текущей загрузки.</p></aside>
+    </section>
+    <section className="case-archive page-pad"><div className="case-archive-head"><div><p className="eyebrow">Портфолио</p><h2>Проекты,<br /><em>которые работают.</em></h2></div><p>Подборка визуальных систем, созданных под задачи и характер разных бизнесов.</p></div><div className="case-list">{cases.map(([num, title, desc, image]) => <article className="case-item" key={title}><div className="case-item-head"><span>{num}</span><div><p>{desc}</p><h2>{title}</h2></div><a href={image} target="_blank" rel="noreferrer" aria-label={`Открыть кейс ${title}`}>↗</a></div><Image src={image} alt={`${title} — презентация проекта`} width={800} height={600} /></article>)}</div></section>
+    {selected && <div className="booking-backdrop" role="presentation" onMouseDown={(event) => { if (event.currentTarget === event.target) setSelected(null); }}><div className="booking-modal" role="dialog" aria-modal="true" aria-labelledby="booking-title"><button className="booking-close" aria-label="Закрыть" onClick={() => setSelected(null)}>×</button><p className="eyebrow">Забронировать кейс</p><h2 id="booking-title">{selected}</h2><p>Оставьте заявку — мы уточним задачу и закрепим за вами свободный слот.</p><form onSubmit={submitBooking}><label>Имя<input required name="name" placeholder="Как к вам обращаться" /></label><label>Telegram / WhatsApp / телефон<input required name="contact" placeholder="Контакт для связи" /></label><label>Кратко опишите задачу<textarea required name="task" placeholder="Что нужно сделать?" rows={3} /></label><button className="slot-button" type="submit">Закрепить слот <span>↗</span></button><small>Отправка заявки не списывает оплату автоматически.</small></form></div></div>}
+    <CtaFooter />
+  </main>;
+}
