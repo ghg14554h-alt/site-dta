@@ -1,10 +1,15 @@
 import vinext from "vinext";
 import { defineConfig } from "vite";
-import hostingConfig from "./.openai/hosting.json";
 import { sites } from "./build/sites-vite-plugin";
 
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   "00000000-0000-4000-8000-000000000000";
+
+let hostingConfig = { d1: undefined, r2: undefined };
+try {
+  const imported = await import("./.openai/hosting.json", { assert: { type: "json" } });
+  hostingConfig = imported.default;
+} catch {}
 
 const { d1, r2 } = hostingConfig;
 
